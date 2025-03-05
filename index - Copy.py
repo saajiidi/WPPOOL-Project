@@ -43,8 +43,7 @@ app.layout = html.Div([
             {'label': 'Actionable Growth Recommendations', 'value': 'growth'},
             {'label': 'Conversion Rate Optimization (CRO)', 'value': 'cro'},
             {'label': 'Growth Strategy & KPI Recommendations', 'value': 'kpi'},
-            {'label': 'Data Storytelling & Visualization', 'value': 'visualization'},
-            {'label': 'High-Engagement vs. Underpenetrated Markets', 'value': 'comparison'}
+            {'label': 'Data Storytelling & Visualization', 'value': 'visualization'}
         ],
         value='exploration',  # Default selection
         style={'width': '50%', 'margin': 'auto', 'marginBottom': '20px'}
@@ -85,10 +84,22 @@ def update_graph(selected_analysis):
                                     labels={'x': 'Subscription Type', 'y': 'Average Sessions'},
                                     title='Average Sessions by Subscription Type')),
             html.H3("Top 5 Most Active Users"),
-            html.Table([
-                html.Thead(html.Tr([html.Th("User ID"), html.Th("Total Sessions"), html.Th("Subscription Type")])),
-                html.Tbody([html.Tr([html.Td(row['user_id']), html.Td(row['total_sessions']), html.Td(row['subscription_type'])]) for _, row in top_users.iterrows()])
-            ]),
+           html.Table([
+                        html.Thead(html.Tr([
+                            html.Th("User ID"),
+                            html.Th("Total Sessions"),
+                            html.Th("Subscription Type")
+                        ])),  # ✅ Correctly closed Thead
+
+                        html.Tbody([  # ✅ Tbody wraps all rows
+                            html.Tr([
+                                html.Td(row['user_id']),
+                                html.Td(row['total_sessions']),
+                                html.Td(row['subscription_type'])
+                            ]) for _, row in top_users.iterrows()
+                        ])
+                    ])
+,
             html.H3("Top 5 Countries with Highest Engagement"),
             dcc.Graph(figure=px.bar(top_countries, x=top_countries.index, y=top_countries.values,
                                     labels={'x': 'Country', 'y': 'Total Sessions'},
@@ -200,20 +211,6 @@ def update_graph(selected_analysis):
                                     names=df[df['subscription_type'] == 'Pro']['plan_type'].unique(),
                                     title='Revenue Distribution by Pro Plan'))
         ])
-    
-    elif selected_analysis == 'comparison':
-        # High-Engagement vs. Underpenetrated Markets
-        high_engagement = df.groupby('country')['total_sessions'].sum().nlargest(5).reset_index()
-        underpenetrated = df.groupby('country')['total_sessions'].sum().nsmallest(5).reset_index()
-        high_engagement['market_type'] = 'High Engagement'
-        underpenetrated['market_type'] = 'Underpenetrated'
-        combined_data = pd.concat([high_engagement, underpenetrated])
-        
-        fig = px.bar(combined_data, x='country', y='total_sessions', color='market_type',
-                      labels={'x': 'Country', 'y': 'Total Sessions'},
-                      title='High-Engagement vs. Underpenetrated Markets',
-                      color_discrete_sequence=px.colors.qualitative.Pastel)
-        return dcc.Graph(figure=fig, config={'toImageButtonOptions': {'format': 'png', 'filename': 'market_comparison'}})
 
 # Run the app
 if __name__ == '__main__':
