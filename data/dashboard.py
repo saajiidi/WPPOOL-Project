@@ -1,3 +1,17 @@
+import subprocess
+import sys
+
+# List of required libraries
+required_libs = ["pandas", "dash", "plotly"]
+
+# Install missing libraries
+for lib in required_libs:
+    try:
+        __import__(lib)
+    except ImportError:
+        print(f"Installing missing library: {lib}")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", lib])
+
 import pandas as pd
 import dash
 from dash import dcc, html
